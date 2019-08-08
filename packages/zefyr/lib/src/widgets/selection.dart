@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:notus/notus.dart';
 import 'package:zefyr/util.dart';
 
@@ -262,16 +263,55 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
     WidgetsBinding.instance.hitTest(result, globalPoint);
     final box = _getEditableBox(result);
     if (box == null) {
-      return;
+      doPaste(globalPoint);
     }
     final localPoint = box.globalToLocal(globalPoint);
     final position = box.getPositionForOffset(localPoint);
     final word = box.getWordBoundary(position);
-    final selection = new TextSelection(
-      baseOffset: word.start,
-      extentOffset: word.end,
-    );
-    widget.controller.updateSelection(selection, source: ChangeSource.local);
+    if (word.end == 0) {
+      doPaste(globalPoint);
+    } else {
+      final selection = new TextSelection(
+        baseOffset: word.start,
+        extentOffset: word.end,
+      );
+      widget.controller.updateSelection(selection, source: ChangeSource.local);
+    }
+  }
+
+  void doPaste(Offset globalPoint) async {
+    try {
+      final ClipboardData clipBoardData = await Clipboard.getData('text/plain');
+      showCopyMenu(
+          context: context,
+          pressedPosition: globalPoint,
+          data: clipBoardData.text);
+    } catch (e) {
+      print(e);
+    }
+  }
+
+  Future<bool> showCopyMenu(
+      {BuildContext context, Offset pressedPosition, String data}) {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+    var x = pressedPosition.dx;
+    var y = pressedPosition.dy;
+
+    return showMenu<bool>(
+        context: context,
+        position: RelativeRect.fromRect(
+            pressedPosition & Size(40, 40), // smaller rect, the touch area
+            Offset.zero & overlay.size // Bigger rect, the entire screen
+            ),
+        items: [
+          PopupMenuItem<bool>(value: true, child: Text("Paste")),
+        ]).then<bool>((val) {
+      if (val != null && val) {
+        final int docIndex = widget.controller.document.length.toInt();
+        widget.controller.document.insert(docIndex - 1, data);
+        widget.controller.notifyListeners();
+      }
+    });
   }
 
   // TODO: these methods should also take into account enabled state.
