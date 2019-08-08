@@ -3,19 +3,19 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-
+import 'dart:io';
+import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:notus/notus.dart';
 import 'package:zefyr/util.dart';
-
 import 'controller.dart';
 import 'editable_box.dart';
 import 'scope.dart';
 
 RenderEditableBox _getEditableBox(HitTestResult result) {
-  for (var entry in result.path) {
+  for (var entry in result.path) {    
     if (entry.target is RenderEditableBox) {
       return entry.target as RenderEditableBox;
     }
@@ -214,7 +214,7 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
   }
 
   void _handleTapDown(TapDownDetails details) {
-    _lastTapDownPosition = details.globalPosition;
+      _lastTapDownPosition = details.globalPosition;
   }
 
   void _handleTapCancel() {
@@ -255,25 +255,73 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
     widget.controller.updateSelection(selection, source: ChangeSource.local);
   }
 
-  void _handleLongPress() {
+  void _handleLongPress() async{
     final Offset globalPoint = _longPressPosition;
     _longPressPosition = null;
     HitTestResult result = new HitTestResult();
     WidgetsBinding.instance.hitTest(result, globalPoint);
     final box = _getEditableBox(result);
     if (box == null) {
-      return;
+      if(Platform.isIOS) {
+        doPaste(globalPoint);
+        return;
+      } else {
+        return;
+      }
     }
     final localPoint = box.globalToLocal(globalPoint);
     final position = box.getPositionForOffset(localPoint);
     final word = box.getWordBoundary(position);
-    final selection = new TextSelection(
-      baseOffset: word.start,
-      extentOffset: word.end,
-    );
-    widget.controller.updateSelection(selection, source: ChangeSource.local);
+    if(word.end==0 && Platform.isIOS) {
+      doPaste(globalPoint);
+    } else {
+      final selection = new TextSelection(
+        baseOffset: word.start,
+        extentOffset: word.end,
+      );
+      widget.controller.updateSelection(selection, source: ChangeSource.local);
+    }
   }
 
+  void doPaste(Offset globalPoint) async{
+    try {
+      final ClipboardData clipBoardData = await Clipboard.getData(
+          'text/plain');
+      showCopyMenu(context: context,
+          pressedPosition: globalPoint,
+          data: clipBoardData.text);
+    }catch(e){
+      print(e);
+    }
+  }
+
+  Future<bool> showCopyMenu({
+    BuildContext context,
+    Offset pressedPosition,
+    String data
+  }) {
+    final RenderBox overlay = Overlay.of(context).context.findRenderObject();
+    var x = pressedPosition.dx;
+    var y = pressedPosition.dy;
+
+    return showMenu<bool>(
+        context: context,
+        position: RelativeRect.fromRect(
+            pressedPosition & Size(40, 40), // smaller rect, the touch area
+            Offset.zero & overlay.size   // Bigger rect, the entire screen
+        ),
+        items: [
+          PopupMenuItem<bool>(value: true, child: Text("Paste")),
+        ]
+    ).then<bool>((val) {
+      if(val !=null && val) {
+        final int docIndex = widget.controller.document.length.toInt();
+        widget.controller.document.insert(docIndex - 1, data);
+        widget.controller.notifyListeners();
+      }
+    });
+
+  }
   // TODO: these methods should also take into account enabled state.
   @override
   bool get copyEnabled => _editor.isEditable;
