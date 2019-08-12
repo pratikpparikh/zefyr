@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:notus/notus.dart';
 import 'package:zefyr/util.dart';
 import 'controller.dart';
@@ -255,24 +256,20 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
     widget.controller.updateSelection(selection, source: ChangeSource.local);
   }
 
-  void _handleLongPress() async{
+  void _handleLongPress() async {
     final Offset globalPoint = _longPressPosition;
     _longPressPosition = null;
     HitTestResult result = new HitTestResult();
     WidgetsBinding.instance.hitTest(result, globalPoint);
     final box = _getEditableBox(result);
     if (box == null) {
-      if(Platform.isIOS) {
-        doPaste(globalPoint);
-        return;
-      } else {
-        return;
-      }
+      doPaste(globalPoint);
     }
     final localPoint = box.globalToLocal(globalPoint);
     final position = box.getPositionForOffset(localPoint);
     final word = box.getWordBoundary(position);
-    if(word.end==0 && Platform.isIOS) {
+
+    if (word.end == 0) {
       doPaste(globalPoint);
     } else {
       final selection = new TextSelection(
@@ -282,6 +279,7 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
       widget.controller.updateSelection(selection, source: ChangeSource.local);
     }
   }
+
 
   void doPaste(Offset globalPoint) async{
     try {
