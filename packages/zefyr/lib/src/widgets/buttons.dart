@@ -346,7 +346,7 @@ class _LinkButtonState extends State<LinkButton> {
     final toolbar = ZefyrToolbar.of(context);
     setState(() {
       _inputKey = new UniqueKey();
-      _inputController.text = getLink('https://');
+      _inputController.text = getLink('');
       _inputController.addListener(_handleInputChange);
       toolbar.markNeedsRebuild();
     });
@@ -527,17 +527,17 @@ class _LinkInputState extends State<_LinkInput> {
         widget.formatError ? Colors.redAccent : toolbarTheme.iconColor;
     final style = theme.textTheme.subhead.copyWith(color: color);
     return TextField(
-      style: style,
-      keyboardType: TextInputType.url,
-      focusNode: _focusNode,
-      controller: widget.controller,
-      autofocus: true,
-      decoration: new InputDecoration(
+        style: style,
+        keyboardType: TextInputType.url,
+        focusNode: _focusNode,
+        controller: widget.controller,
+        autofocus: true,
+        decoration: new InputDecoration(
         hintText: 'https://',
         filled: true,
         fillColor: toolbarTheme.color,
         border: InputBorder.none,
-        contentPadding: const EdgeInsets.all(10.0),
+        contentPadding: const EdgeInsets.all(10.0)
       ),
     );
   }
