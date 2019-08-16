@@ -3,20 +3,20 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:math' as math;
 import 'dart:ui' as ui;
-import 'dart:io';
-import 'package:flutter/services.dart';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:notus/notus.dart';
 import 'package:zefyr/util.dart';
+
 import 'controller.dart';
 import 'editable_box.dart';
 import 'scope.dart';
 
 RenderEditableBox _getEditableBox(HitTestResult result) {
-  for (var entry in result.path) {    
+  for (var entry in result.path) {
     if (entry.target is RenderEditableBox) {
       return entry.target as RenderEditableBox;
     }
@@ -215,7 +215,7 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
   }
 
   void _handleTapDown(TapDownDetails details) {
-      _lastTapDownPosition = details.globalPosition;
+    _lastTapDownPosition = details.globalPosition;
   }
 
   void _handleTapCancel() {
@@ -280,24 +280,20 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
     }
   }
 
-
-  void doPaste(Offset globalPoint) async{
+  void doPaste(Offset globalPoint) async {
     try {
-      final ClipboardData clipBoardData = await Clipboard.getData(
-          'text/plain');
-      showCopyMenu(context: context,
+      final ClipboardData clipBoardData = await Clipboard.getData('text/plain');
+      showCopyMenu(
+          context: context,
           pressedPosition: globalPoint,
           data: clipBoardData.text);
-    }catch(e){
+    } catch (e) {
       print(e);
     }
   }
 
-  Future<bool> showCopyMenu({
-    BuildContext context,
-    Offset pressedPosition,
-    String data
-  }) {
+  Future<bool> showCopyMenu(
+      {BuildContext context, Offset pressedPosition, String data}) {
     final RenderBox overlay = Overlay.of(context).context.findRenderObject();
     var x = pressedPosition.dx;
     var y = pressedPosition.dy;
@@ -306,20 +302,19 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
         context: context,
         position: RelativeRect.fromRect(
             pressedPosition & Size(40, 40), // smaller rect, the touch area
-            Offset.zero & overlay.size   // Bigger rect, the entire screen
-        ),
+            Offset.zero & overlay.size // Bigger rect, the entire screen
+            ),
         items: [
           PopupMenuItem<bool>(value: true, child: Text("Paste")),
-        ]
-    ).then<bool>((val) {
-      if(val !=null && val) {
+        ]).then<bool>((val) {
+      if (val != null && val) {
         final int docIndex = widget.controller.document.length.toInt();
         widget.controller.document.insert(docIndex - 1, data);
         widget.controller.notifyListeners();
       }
     });
-
   }
+
   // TODO: these methods should also take into account enabled state.
   @override
   bool get copyEnabled => _editor.isEditable;
@@ -467,8 +462,7 @@ class _SelectionHandleDriverState extends State<SelectionHandleDriver>
 
     // Make sure the GestureDetector is big enough to be easily interactive.
     final Rect interactiveRect = handleRect.expandToInclude(
-      Rect.fromCircle(
-          center: handleRect.center, radius: kMinInteractiveSize / 2),
+      Rect.fromCircle(center: handleRect.center, radius: kMinInteractiveDimension / 2),
     );
     final RelativeRect padding = RelativeRect.fromLTRB(
       math.max((interactiveRect.width - handleRect.width) / 2, 0),
