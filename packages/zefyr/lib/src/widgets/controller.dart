@@ -137,7 +137,8 @@ class ZefyrController extends ChangeNotifier {
     // the change. This is needed in cases when format operation actually
     // inserts data into the document (e.g. embeds).
     final base = change.transformPosition(_selection.baseOffset);
-    final extent = change.transformPosition(_selection.extentOffset);
+    final extent =
+        change.transformPosition(_selection.extentOffset);
     final adjustedSelection =
         _selection.copyWith(baseOffset: base, extentOffset: extent);
     if (_selection != adjustedSelection) {
