@@ -264,6 +264,7 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
     final box = _getEditableBox(result);
     if (box == null) {
       doPaste(globalPoint);
+      return;
     }
     final localPoint = box.globalToLocal(globalPoint);
     final position = box.getPositionForOffset(localPoint);
@@ -286,7 +287,7 @@ class _ZefyrSelectionOverlayState extends State<ZefyrSelectionOverlay>
       showCopyMenu(
           context: context,
           pressedPosition: globalPoint,
-          data: clipBoardData.text);
+          data: clipBoardData.text??'');
     } catch (e) {
       print(e);
     }
