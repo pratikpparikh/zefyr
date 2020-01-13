@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'editor.dart';
+
+/// Provides necessary layout for [ZefyrEditor].
 class ZefyrScaffold extends StatefulWidget {
   final Widget child;
 
@@ -7,7 +10,7 @@ class ZefyrScaffold extends StatefulWidget {
 
   static ZefyrScaffoldState of(BuildContext context) {
     final _ZefyrScaffoldAccess widget =
-        context.inheritFromWidgetOfExactType(_ZefyrScaffoldAccess);
+        context.dependOnInheritedWidgetOfExactType<_ZefyrScaffoldAccess>();
     return widget.scaffold;
   }
 
@@ -24,8 +27,8 @@ class ZefyrScaffoldState extends State<ZefyrScaffold> {
     });
   }
 
-  void hideToolbar() {
-    if (_toolbarBuilder != null) {
+  void hideToolbar(WidgetBuilder builder) {
+    if (_toolbarBuilder == builder) {
       setState(() {
         _toolbarBuilder = null;
       });

@@ -16,7 +16,7 @@ class BlockNode extends ContainerNode<LineNode>
     implements StyledNode {
   /// Creates new unmounted [BlockNode] with the same attributes.
   BlockNode clone() {
-    final node = new BlockNode();
+    final node = BlockNode();
     node.applyStyle(style);
     return node;
   }
@@ -33,14 +33,14 @@ class BlockNode extends ContainerNode<LineNode>
       insertAfter(line);
     } else {
       /// need to split this block into two as [line] is in the middle.
-      BlockNode before = clone();
+      final before = clone();
       insertBefore(before);
 
-      LineNode child = this.first;
+      LineNode child = first;
       while (child != line) {
         child.unlink();
         before.add(child);
-        child = this.first as LineNode;
+        child = first as LineNode;
       }
       line.unlink();
       insertBefore(line);
@@ -49,20 +49,20 @@ class BlockNode extends ContainerNode<LineNode>
   }
 
   @override
-  LineNode get defaultChild => new LineNode();
+  LineNode get defaultChild => LineNode();
 
   @override
   Delta toDelta() {
     // Line nodes take care of incorporating block style into their delta.
     return children
         .map((child) => child.toDelta())
-        .fold(new Delta(), (a, b) => a.concat(b));
+        .fold(Delta(), (a, b) => a.concat(b));
   }
 
   @override
   String toString() {
     final block = style.value(NotusAttribute.block);
-    final buffer = new StringBuffer('§ {$block}\n');
+    final buffer = StringBuffer('§ {$block}\n');
     for (var child in children) {
       final tree = child.isLast ? '└' : '├';
       buffer.write('  $tree $child');
@@ -74,7 +74,7 @@ class BlockNode extends ContainerNode<LineNode>
   @override
   void optimize() {
     if (isEmpty) {
-      Node sibling = this.previous;
+      final sibling = previous;
       unlink();
       if (sibling != null) sibling.optimize();
       return;

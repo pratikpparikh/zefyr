@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'controller.dart';
 import 'editor.dart';
 import 'image.dart';
+import 'mode.dart';
 import 'toolbar.dart';
 
 /// Zefyr editor with material design decorations.
@@ -15,10 +16,17 @@ class ZefyrField extends StatefulWidget {
   final ZefyrController controller;
   final FocusNode focusNode;
   final bool autofocus;
-  final bool enabled;
+  final ZefyrMode mode;
   final ZefyrToolbarDelegate toolbarDelegate;
   final ZefyrImageDelegate imageDelegate;
   final ScrollPhysics physics;
+
+  /// The appearance of the keyboard.
+  ///
+  /// This setting is only honored on iOS devices.
+  ///
+  /// If unset, defaults to the brightness of [ThemeData.primaryColorBrightness].
+  final Brightness keyboardAppearance;
 
   const ZefyrField({
     Key key,
@@ -26,11 +34,12 @@ class ZefyrField extends StatefulWidget {
     this.height,
     this.controller,
     this.focusNode,
-    this.autofocus: false,
-    this.enabled,
+    this.autofocus = false,
+    this.mode,
     this.toolbarDelegate,
     this.imageDelegate,
     this.physics,
+    this.keyboardAppearance,
   }) : super(key: key);
 
   @override
@@ -45,10 +54,11 @@ class _ZefyrFieldState extends State<ZefyrField> {
       controller: widget.controller,
       focusNode: widget.focusNode,
       autofocus: widget.autofocus,
-      enabled: widget.enabled ?? true,
+      mode: widget.mode ?? ZefyrMode.edit,
       toolbarDelegate: widget.toolbarDelegate,
       imageDelegate: widget.imageDelegate,
       physics: widget.physics,
+      keyboardAppearance: widget.keyboardAppearance,
     );
 
     if (widget.height != null) {
@@ -78,7 +88,7 @@ class _ZefyrFieldState extends State<ZefyrField> {
         (widget.decoration ?? const InputDecoration())
             .applyDefaults(Theme.of(context).inputDecorationTheme)
             .copyWith(
-              enabled: widget.enabled ?? true,
+              enabled: widget.mode == ZefyrMode.edit,
             );
 
     return effectiveDecoration;

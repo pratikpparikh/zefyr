@@ -37,11 +37,11 @@ class RawZefyrLine extends StatefulWidget {
   final EdgeInsets padding;
 
   @override
-  _RawZefyrLineState createState() => new _RawZefyrLineState();
+  _RawZefyrLineState createState() => _RawZefyrLineState();
 }
 
 class _RawZefyrLineState extends State<RawZefyrLine> {
-  final LayerLink _link = new LayerLink();
+  final LayerLink _link = LayerLink();
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +115,7 @@ class _RawZefyrLineState extends State<RawZefyrLine> {
     final List<TextSpan> children = widget.node.children
         .map((node) => _segmentToTextSpan(node, theme))
         .toList(growable: false);
-    return new TextSpan(style: widget.style, children: children);
+    return TextSpan(style: widget.style, children: children);
   }
 
   TextSpan _segmentToTextSpan(Node node, ZefyrThemeData theme) {
@@ -134,7 +134,7 @@ class _RawZefyrLineState extends State<RawZefyrLine> {
   }
 
   TextStyle _getTextStyle(NotusStyle style, ZefyrThemeData theme) {
-    TextStyle result = new TextStyle();
+    TextStyle result = TextStyle();
     if (style.containsSame(NotusAttribute.bold)) {
       result = result.merge(theme.boldStyle);
     }
@@ -156,7 +156,7 @@ class _RawZefyrLineState extends State<RawZefyrLine> {
     } else if (embed.type == EmbedType.image) {
       return ZefyrImage(node: node, delegate: scope.imageDelegate);
     } else {
-      throw new UnimplementedError('Unimplemented embed type ${embed.type}');
+      throw UnimplementedError('Unimplemented embed type ${embed.type}');
     }
   }
 }
@@ -166,6 +166,17 @@ class LinkTextSpan extends TextSpan {
       : super(
             style: style,
             text: text ?? url,
-            recognizer: new TapGestureRecognizer()
-              ..onTap = () => launcher.launch(url));
+            recognizer: TapGestureRecognizer()
+              ..onTap = () async {
+                print("onTap");
+                await _launchURL(url);
+              });
+
+  static Future<void> _launchURL(String url) async {
+    if (await launcher.canLaunch(url)) {
+      await launcher.launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
 }

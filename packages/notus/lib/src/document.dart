@@ -40,7 +40,7 @@ class NotusDocument {
   /// Creates new empty Notus document.
   NotusDocument()
       : _heuristics = NotusHeuristics.fallback,
-        _delta = new Delta()..insert('\n') {
+        _delta = Delta()..insert('\n') {
     _loadDocument(_delta);
   }
 
@@ -61,7 +61,7 @@ class NotusDocument {
 
   /// The root node of this document tree.
   RootNode get root => _root;
-  final RootNode _root = new RootNode();
+  final RootNode _root = RootNode();
 
   /// Length of this document.
   int get length => _root.length;
@@ -70,10 +70,10 @@ class NotusDocument {
   Stream<NotusChange> get changes => _controller.stream;
 
   final StreamController<NotusChange> _controller =
-      new StreamController.broadcast();
+      StreamController.broadcast();
 
   /// Returns contents of this document as [Delta].
-  Delta toDelta() => new Delta.from(_delta);
+  Delta toDelta() => Delta.from(_delta);
   Delta _delta;
 
   /// Returns plain text representation of this document.
@@ -104,7 +104,7 @@ class NotusDocument {
     assert(index >= 0);
     assert(text.isNotEmpty);
     text = _sanitizeString(text);
-    if (text.isEmpty) return new Delta();
+    if (text.isEmpty) return Delta();
     final change = _heuristics.applyInsertRules(this, index, text);
     compose(change, ChangeSource.local);
     return change;
@@ -136,12 +136,11 @@ class NotusDocument {
   Delta replace(int index, int length, String text) {
     assert(index >= 0 && (text.isNotEmpty || length > 0),
         'With index $index, length $length and text "$text"');
-    Delta delta = new Delta();
+    var delta = Delta();
     // We have to compose before applying delete rules
     // Otherwise delete would be operating on stale document snapshot.
     if (text.isNotEmpty) {
-      delta = insert(index, text);
-      index = delta.transformPosition(index);
+      delta = insert(index + length, text);
     }
 
     if (length > 0) {
@@ -161,10 +160,24 @@ class NotusDocument {
   /// unchanged and no [NotusChange] is published to [changes] stream.
   Delta format(int index, int length, NotusAttribute attribute) {
     assert(index >= 0 && length >= 0 && attribute != null);
-    final change = _heuristics.applyFormatRules(this, index, length, attribute);
-    if (change.isNotEmpty) {
-      compose(change, ChangeSource.local);
+
+    var change = Delta();
+
+    if (attribute is EmbedAttribute && length > 0) {
+      // Must delete selected length of text before applying embed attribute
+      // since inserting an embed in non-empty selection is essentially a
+      // replace operation.
+      change = delete(index, length);
+      length = 0;
     }
+
+    final formatChange =
+        _heuristics.applyFormatRules(this, index, length, attribute);
+    if (formatChange.isNotEmpty) {
+      compose(formatChange, ChangeSource.local);
+      change = change.compose(formatChange);
+    }
+
     return change;
   }
 
@@ -208,9 +221,9 @@ class NotusDocument {
     change.trim();
     assert(change.isNotEmpty);
 
-    int offset = 0;
+    var offset = 0;
     final before = toDelta();
-    for (final Operation op in change.toList()) {
+    for (final op in change.toList()) {
       final attributes =
           op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;
       if (op.isInsert) {
@@ -225,10 +238,10 @@ class NotusDocument {
     _delta = _delta.compose(change);
 
     if (_delta != _root.toDelta()) {
-      throw new StateError('Compose produced inconsistent results. '
+      throw StateError('Compose produced inconsistent results. '
           'This is likely due to a bug in the library. Tried to compose change $change from $source.');
     }
-    _controller.add(new NotusChange(before, change, source));
+    _controller.add(NotusChange(before, change, source));
   }
 
   //
@@ -258,21 +271,21 @@ class NotusDocument {
   void _loadDocument(Delta doc) {
     assert(doc.last.data.endsWith('\n'),
         'Invalid document delta. Document delta must always end with a line-break.');
-    int offset = 0;
-    for (final Operation op in doc.toList()) {
+    var offset = 0;
+    for (final op in doc.toList()) {
       final style =
           op.attributes != null ? NotusStyle.fromJson(op.attributes) : null;
       if (op.isInsert) {
         _root.insert(offset, op.data, style);
       } else {
-        throw new ArgumentError.value(doc,
-            "Document Delta can only contain insert operations but ${op.key} found.");
+        throw ArgumentError.value(doc,
+            'Document Delta can only contain insert operations but ${op.key} found.');
       }
       offset += op.length;
     }
     // Must remove last line if it's empty and with no styles.
     // TODO: find a way for DocumentRoot to not create extra line when composing initial delta.
-    Node node = _root.last;
+    final node = _root.last;
     if (node is LineNode &&
         node.parent is! BlockNode &&
         node.style.isEmpty &&

@@ -1,19 +1,19 @@
 // Copyright (c) 2018, the Zefyr project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'package:test/test.dart';
 import 'package:notus/notus.dart';
+import 'package:test/test.dart';
 
 void main() {
   group('$Node', () {
     RootNode root;
     setUp(() {
-      root = new RootNode();
+      root = RootNode();
     });
 
     test('mounted', () {
-      LineNode line = new LineNode();
-      TextNode text = new TextNode();
+      final line = LineNode();
+      final text = TextNode();
       expect(text.mounted, isFalse);
       line.add(text);
       expect(text.mounted, isTrue);
