@@ -230,6 +230,7 @@ class RenderEditableProxyBox extends RenderBox
   }
 
   void _paintCursor(PaintingContext context, Offset offset) {
+    final _ = getOffsetForCaret(_selection.extent, Rect.zero);
     Offset caretOffset =
         getOffsetForCaret(_selection.extent, _cursorPainter.prototype);
     _cursorPainter.paint(context.canvas, caretOffset + offset);

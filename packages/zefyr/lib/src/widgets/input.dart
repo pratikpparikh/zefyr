@@ -184,4 +184,15 @@ class InputConnectionController implements TextInputClient {
   @override
   TextEditingValue get currentTextEditingValue =>
       _lastKnownRemoteTextEditingValue;
+
+  @override
+  AutofillScope get currentAutofillScope => null;
+
+  // null if no promptRect should be shown.
+  TextRange _currentPromptRectRange;
+
+  @override
+  void showAutocorrectionPromptRect(int start, int end) {
+    _currentPromptRectRange = TextRange(start: start, end: end);
+  }
 }
