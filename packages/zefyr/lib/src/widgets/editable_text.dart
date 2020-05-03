@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:notus/notus.dart';
 
@@ -89,7 +90,7 @@ class ZefyrEditableText extends StatefulWidget {
 }
 
 class _ZefyrEditableTextState extends State<ZefyrEditableText>
-    with AutomaticKeepAliveClientMixin {
+    with AutomaticKeepAliveClientMixin, AutofillClient {
   //
   // New public members
   //
@@ -131,7 +132,7 @@ class _ZefyrEditableTextState extends State<ZefyrEditableText>
   }
 
   TextSelectionControls defaultSelectionControls(BuildContext context) {
-    TargetPlatform platform = Theme.of(context).platform;
+    final platform = Theme.of(context).platform;
     if (platform == TargetPlatform.iOS) {
       return cupertinoTextSelectionControls;
     }
@@ -190,6 +191,12 @@ class _ZefyrEditableTextState extends State<ZefyrEditableText>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final newAutofillGroup = AutofillGroup.of(context);
+    if (_input.currentAutofillGroupState != newAutofillGroup) {
+      _input.currentAutofillGroupState?.unregister(_input.autofillId);
+      _input.currentAutofillGroupState = newAutofillGroup;
+      newAutofillGroup?.register(this);
+    }
     final scope = ZefyrScope.of(context);
     if (_renderContext != scope.renderContext) {
       _renderContext?.removeListener(_handleRenderContextChange);
@@ -206,6 +213,7 @@ class _ZefyrEditableTextState extends State<ZefyrEditableText>
 
   @override
   void dispose() {
+    _input.currentAutofillGroupState?.unregister(_input.autofillId);
     _focusAttachment.detach();
     _cancelSubscriptions();
     super.dispose();
@@ -319,5 +327,19 @@ class _ZefyrEditableTextState extends State<ZefyrEditableText>
     setState(() {
       // nothing to update internally.
     });
+  }
+
+  @override
+  String get autofillId => _input.autofillId;
+
+  @override
+  TextInputConfiguration get textInputConfiguration =>
+      _input.textInputConfiguration;
+
+  @override
+  void updateEditingValue(TextEditingValue newEditingValue) {
+    // Since we still have to support keyboard select, this is the best place
+    // to disable text updating.
+    _input.updateEditingValue(newEditingValue);
   }
 }

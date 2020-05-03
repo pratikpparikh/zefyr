@@ -9,7 +9,7 @@ typedef RemoteValueChanged = Function(
     int start, String deleted, String inserted, TextSelection selection);
 
 class InputConnectionController implements TextInputClient {
-  InputConnectionController(this.onValueChanged)
+  InputConnectionController(this.onValueChanged, {this.autofillHints})
       : assert(onValueChanged != null);
 
   //
@@ -17,6 +17,23 @@ class InputConnectionController implements TextInputClient {
   //
 
   final RemoteValueChanged onValueChanged;
+
+  /// {@template flutter.widgets.editableText.autofillHints}
+  /// A list of strings that helps the autofill service identify the type of this
+  /// text input.
+  ///
+  /// When set to null or empty, the text input will not send any autofill related
+  /// information to the platform. As a result, it will not participate in
+  /// autofills triggered by a different [AutofillClient], even if they're in the
+  /// same [AutofillScope]. Additionally, on Android and web, setting this to null
+  /// or empty will disable autofill for this text field.
+  ///
+  /// The minimum platform SDK version that supports Autofill is API level 26
+  /// for Android, and iOS 10.0 for iOS.
+  ///
+  /// {@macro flutter.services.autofill.autofillHints}
+  /// {@endtemplate}
+  final Iterable<String> autofillHints;
 
   /// Returns `true` if there is open input connection.
   bool get hasConnection =>
@@ -34,18 +51,27 @@ class InputConnectionController implements TextInputClient {
   }
 
   void openConnection(TextEditingValue value, Brightness keyboardAppearance) {
+    final isAutofillEnabled = autofillHints?.isNotEmpty ?? false;
     if (!hasConnection) {
       _lastKnownRemoteTextEditingValue = value;
+      _textInputConfiguration = TextInputConfiguration(
+        inputType: TextInputType.multiline,
+        obscureText: false,
+        autocorrect: true,
+        inputAction: TextInputAction.newline,
+        keyboardAppearance: keyboardAppearance,
+        textCapitalization: TextCapitalization.sentences,
+        autofillConfiguration: !isAutofillEnabled
+            ? null
+            : AutofillConfiguration(
+                uniqueIdentifier: autofillId,
+                autofillHints: autofillHints.toList(growable: false),
+                currentEditingValue: currentTextEditingValue,
+              ),
+      );
       _textInputConnection = TextInput.attach(
         this,
-        TextInputConfiguration(
-          inputType: TextInputType.multiline,
-          obscureText: false,
-          autocorrect: true,
-          inputAction: TextInputAction.newline,
-          keyboardAppearance: keyboardAppearance,
-          textCapitalization: TextCapitalization.sentences,
-        ),
+        _textInputConfiguration,
       )..setEditingState(value);
       _sentRemoteValues.add(value);
     }
@@ -81,7 +107,7 @@ class InputConnectionController implements TextInputClient {
 
     if (actualValue == _lastKnownRemoteTextEditingValue) return;
 
-    bool shouldRemember = value.text != _lastKnownRemoteTextEditingValue.text;
+    final shouldRemember = value.text != _lastKnownRemoteTextEditingValue.text;
     _lastKnownRemoteTextEditingValue = actualValue;
     _textInputConnection.setEditingState(actualValue);
     if (shouldRemember) {
@@ -165,6 +191,9 @@ class InputConnectionController implements TextInputClient {
   final List<TextEditingValue> _sentRemoteValues = [];
   TextInputConnection _textInputConnection;
   TextEditingValue _lastKnownRemoteTextEditingValue;
+  TextInputConfiguration _textInputConfiguration;
+
+  TextInputConfiguration get textInputConfiguration => _textInputConfiguration;
 
   @override
   void updateFloatingCursor(RawFloatingCursorPoint point) {
@@ -186,7 +215,19 @@ class InputConnectionController implements TextInputClient {
       _lastKnownRemoteTextEditingValue;
 
   @override
-  AutofillScope get currentAutofillScope => null;
+  String get autofillId => 'EditableText-$hashCode';
+
+  AutofillGroupState _currentAutofillGroupState;
+
+  AutofillGroupState get currentAutofillGroupState =>
+      _currentAutofillGroupState;
+
+  set currentAutofillGroupState(AutofillGroupState newCurrentAutofillScope) {
+    _currentAutofillGroupState = newCurrentAutofillScope;
+  }
+
+  @override
+  AutofillScope get currentAutofillScope => _currentAutofillGroupState;
 
   // null if no promptRect should be shown.
   TextRange _currentPromptRectRange;
