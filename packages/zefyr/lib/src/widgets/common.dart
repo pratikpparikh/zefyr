@@ -62,11 +62,14 @@ class _ZefyrLineState extends State<ZefyrLine> {
       Color cursorColor;
       switch (theme.platform) {
         case TargetPlatform.iOS:
+        case TargetPlatform.macOS:
           cursorColor ??= CupertinoTheme.of(context).primaryColor;
           break;
 
         case TargetPlatform.android:
         case TargetPlatform.fuchsia:
+        case TargetPlatform.windows:
+        case TargetPlatform.linux:
           cursorColor = theme.cursorColor;
           break;
       }
@@ -100,14 +103,14 @@ class _ZefyrLineState extends State<ZefyrLine> {
   }
 
   void bringIntoView(BuildContext context) {
-    ScrollableState scrollable = Scrollable.of(context);
+    final scrollable = Scrollable.of(context);
     final object = context.findRenderObject();
     assert(object.attached);
-    final RenderAbstractViewport viewport = RenderAbstractViewport.of(object);
+    final viewport = RenderAbstractViewport.of(object);
     assert(viewport != null);
 
-    final double offset = scrollable.position.pixels;
-    double target = viewport.getOffsetToReveal(object, 0.0).offset;
+    final offset = scrollable.position.pixels;
+    var target = viewport.getOffsetToReveal(object, 0.0).offset;
     if (target - offset < 0.0) {
       scrollable.position.jumpTo(target);
       return;
@@ -120,7 +123,7 @@ class _ZefyrLineState extends State<ZefyrLine> {
 
   TextSpan buildText(BuildContext context) {
     final theme = ZefyrTheme.of(context);
-    final List<TextSpan> children = widget.node.children
+    final children = widget.node.children
         .map((node) => _segmentToTextSpan(node, theme))
         .toList(growable: false);
     return TextSpan(style: widget.style, children: children);
@@ -142,7 +145,7 @@ class _ZefyrLineState extends State<ZefyrLine> {
   }
 
   TextStyle _getTextStyle(NotusStyle style, ZefyrThemeData theme) {
-    TextStyle result = TextStyle();
+    var result = TextStyle();
     if (style.containsSame(NotusAttribute.bold)) {
       result = result.merge(theme.attributeTheme.bold);
     }
@@ -176,7 +179,7 @@ class LinkTextSpan extends TextSpan {
             text: text ?? url,
             recognizer: TapGestureRecognizer()
               ..onTap = () async {
-                print("onTap");
+                print('onTap');
                 await _launchURL(url);
               });
 
