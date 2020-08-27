@@ -236,4 +236,7 @@ class InputConnectionController implements TextInputClient {
   void showAutocorrectionPromptRect(int start, int end) {
     _currentPromptRectRange = TextRange(start: start, end: end);
   }
+
+  @override
+  void performPrivateCommand(String action, Map<String, dynamic> data) {}
 }
