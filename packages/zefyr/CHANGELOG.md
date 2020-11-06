@@ -1,3 +1,11 @@
+## 0.12.0
+
+* Updated to support Flutter 1.22
+
+## 0.11.0
+
+* Updated to support Flutter 1.17.0
+
 ## 0.10.0
 
 This release contains breaking changes.

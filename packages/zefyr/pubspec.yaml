@@ -11,11 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
   collection: ^1.14.13
-  url_launcher: ^5.5.0
-  image_picker: ^0.6.7+7
-  quill_delta: ^1.0.2
-  notus: ^0.1.5
-  meta: ^1.2.2
+  url_launcher: ^5.7.10
+  image_picker: ^0.6.7+12
+  quill_delta: ^2.0.0
+  notus:
+    path: ../../packages/notus
+  meta: ^1.2.3
   quiver_hashcode: ^2.0.0
 
 dev_dependencies:

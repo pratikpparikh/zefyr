@@ -27,7 +27,10 @@ class _FormEmbeddedScreenState extends State<FormEmbeddedScreen> {
       children: <Widget>[
         TextField(decoration: InputDecoration(labelText: 'Name')),
         buildEditor(),
-        TextField(decoration: InputDecoration(labelText: 'Email')),
+        TextField(
+          decoration: InputDecoration(labelText: 'Details'),
+          maxLines: 3,
+        ),
       ],
     );
 

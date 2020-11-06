@@ -36,7 +36,19 @@ class PreserveLineStyleOnSplitRule extends InsertRule {
 
   bool isEdgeLineSplit(Operation before, Operation after) {
     if (before == null) return true; // split at the beginning of a doc
-    return before.data.endsWith('\n') || after.data.startsWith('\n');
+    var beforeData = '';
+    if (before != null && before.data is String) {
+      beforeData = before.data as String;
+    } else if (before != null) {
+      beforeData = before.data.toString();
+    }
+    var afterData = '';
+    if (after != null && after.data is String) {
+      afterData = after.data as String;
+    } else if (after != null) {
+      afterData = after.data.toString();
+    }
+    return beforeData.endsWith('\n') || afterData.startsWith('\n');
   }
 
   @override
@@ -48,7 +60,13 @@ class PreserveLineStyleOnSplitRule extends InsertRule {
     final after = iter.next();
     if (isEdgeLineSplit(before, after)) return null;
     final result = Delta()..retain(index);
-    if (after.data.contains('\n')) {
+    var afterData = '';
+    if (after != null && after.data is String) {
+      afterData = after.data as String;
+    } else if (after != null) {
+      afterData = after.data.toString();
+    }
+    if (afterData.contains('\n')) {
       // It is not allowed to combine line and inline styles in insert
       // operation containing line-break together with other characters.
       // The only scenario we get such operation is when the text is plain.
@@ -61,7 +79,13 @@ class PreserveLineStyleOnSplitRule extends InsertRule {
     Map<String, dynamic> attributes;
     while (iter.hasNext) {
       final op = iter.next();
-      final lf = op.data.indexOf('\n');
+      var opData = '';
+      if (op != null && op.data is String) {
+        opData = op.data as String;
+      } else if (op != null) {
+        opData = op.data.toString();
+      }
+      final lf = opData.indexOf('\n');
       if (lf >= 0) {
         attributes = op.attributes;
         break;
@@ -85,8 +109,13 @@ class ResetLineFormatOnNewLineRule extends InsertRule {
     final iter = DeltaIterator(document);
     iter.skip(index);
     final target = iter.next();
-
-    if (target.data.startsWith('\n')) {
+    var targetData = '';
+    if (target != null && target.data is String) {
+      targetData = target.data as String;
+    } else if (target != null) {
+      targetData = target.data.toString();
+    }
+    if (targetData.startsWith('\n')) {
       Map<String, dynamic> resetStyle;
       if (target.attributes != null &&
           target.attributes.containsKey(NotusAttribute.heading.key)) {
@@ -109,8 +138,20 @@ class AutoExitBlockRule extends InsertRule {
   const AutoExitBlockRule();
 
   bool isEmptyLine(Operation previous, Operation target) {
-    return (previous == null || previous.data.endsWith('\n')) &&
-        target.data.startsWith('\n');
+    var previousData = '';
+    if (previous != null && previous.data is String) {
+      previousData = previous.data as String;
+    } else if (previous != null) {
+      previousData = previous.data.toString();
+    }
+    var targetData = '';
+    if (target != null && target.data is String) {
+      targetData = target.data as String;
+    } else if (target != null) {
+      targetData = target.data.toString();
+    }
+    return (previous == null || previousData.endsWith('\n')) &&
+        targetData.startsWith('\n');
   }
 
   @override
@@ -153,7 +194,13 @@ class PreserveInlineStylesRule extends InsertRule {
     // If there is a line-break in previous chunk, there should be no inline
     // styles. Also if there is no previous operation we are at the beginning
     // of the document so no styles to inherit from.
-    if (previous == null || previous.data.contains('\n')) return null;
+    var previousData = '';
+    if (previous != null && previous.data is String) {
+      previousData = previous.data as String;
+    } else if (previous != null) {
+      previousData = previous.data.toString();
+    }
+    if (previous == null || previousData.contains('\n')) return null;
 
     final attributes = previous.attributes;
     final hasLink =
@@ -210,7 +257,13 @@ class AutoFormatLinksRule extends InsertRule {
     if (previous == null) return null;
 
     // Split text of previous operation in lines and words and take last word to test.
-    final candidate = previous.data.split('\n').last.split(' ').last;
+    var previousData = '';
+    if (previous != null && previous.data is String) {
+      previousData = previous.data as String;
+    } else if (previous != null) {
+      previousData = previous.data.toString();
+    }
+    final candidate = previousData.split('\n').last.split(' ').last;
     try {
       final link = Uri.parse(candidate);
       if (!['https', 'http'].contains(link.scheme)) {
@@ -269,7 +322,13 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
 
   bool isEdgeLineSplit(Operation before, Operation after) {
     if (before == null) return true; // split at the beginning of a doc
-    return before.data.endsWith('\n') || after.data.startsWith('\n');
+    var beforeData = '';
+    if (before != null && before.data is String) {
+      beforeData = before.data as String;
+    } else if (before != null) {
+      beforeData = before.data.toString();
+    }
+    return beforeData.endsWith('\n') || beforeData.startsWith('\n');
   }
 
   @override
@@ -287,7 +346,13 @@ class PreserveBlockStyleOnPasteRule extends InsertRule {
     Map<String, dynamic> lineStyle;
     while (iter.hasNext) {
       final op = iter.next();
-      final lf = op.data.indexOf('\n');
+      var opData = '';
+      if (op != null && op.data is String) {
+        opData = op.data as String;
+      } else if (op != null) {
+        opData = op.data.toString();
+      }
+      final lf = opData.indexOf('\n');
       if (lf >= 0) {
         lineStyle = op.attributes;
         break;

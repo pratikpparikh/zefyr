@@ -51,7 +51,13 @@ class PreserveLineStyleOnMergeRule extends DeleteRule {
     // Look for next line-break to apply the attributes
     while (iter.hasNext) {
       final op = iter.next();
-      final lf = op.data.indexOf('\n');
+      var opData = '';
+      if (op.data is String) {
+        opData = op.data as String;
+      } else {
+        opData = op.data.toString();
+      }
+      final lf = opData.indexOf('\n');
       if (lf == -1) {
         result..retain(op.length);
         continue;
@@ -89,7 +95,13 @@ class EnsureEmbedLineRule extends DeleteRule {
     var remaining = length;
     var foundEmbed = false;
     var hasLineBreakBefore = false;
-    if (op != null && op.data.endsWith(kZeroWidthSpace)) {
+    var opData = '';
+    if (op != null && op.data is String) {
+      opData = op.data as String;
+    } else if (op != null) {
+      opData = op.data.toString();
+    }
+    if (op != null && opData.endsWith(kZeroWidthSpace)) {
       foundEmbed = true;
       var candidate = iter.next(1);
       remaining--;
@@ -107,12 +119,17 @@ class EnsureEmbedLineRule extends DeleteRule {
       }
     } else {
       // If op is `null` it's a beginning of the doc, e.g. implicit line break.
-      hasLineBreakBefore = op == null || op.data.endsWith('\n');
+      hasLineBreakBefore = op == null || opData.endsWith('\n');
     }
 
     // Second, check if line-break deleted before an embed.
     op = iter.skip(remaining);
-    if (op != null && op.data.endsWith('\n')) {
+    if (op != null && op.data is String) {
+      opData = op.data as String;
+    } else if (op != null) {
+      opData = op.data.toString();
+    }
+    if (op != null && opData.endsWith('\n')) {
       final candidate = iter.next(1);
       // If there is a line-break before deleted range we allow the operation
       // since it results in a correctly formatted line with single embed in it.

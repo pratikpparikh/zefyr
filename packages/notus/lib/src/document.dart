@@ -269,7 +269,7 @@ class NotusDocument {
 
   /// Loads [document] delta into this document.
   void _loadDocument(Delta doc) {
-    assert(doc.last.data.endsWith('\n'),
+    assert(doc.last.data is String && (doc.last.data as String).endsWith('\n'),
         'Invalid document delta. Document delta must always end with a line-break.');
     var offset = 0;
     for (final op in doc.toList()) {
