@@ -30,19 +30,17 @@ class EditorPageState extends State<EditorPage> {
 
   @override
   Widget build(BuildContext context) {
-    final Widget body = (_controller == null)
+    final body = (_controller == null)
         ? Center(child: CircularProgressIndicator())
-        : ZefyrScaffold(
-            child: ZefyrEditor(
-              padding: EdgeInsets.all(16),
-              controller: _controller,
-              focusNode: _focusNode,
-            ),
+        : ZefyrField(
+            padding: EdgeInsets.all(16),
+            controller: _controller,
+            focusNode: _focusNode,
           );
 
     return Scaffold(
       appBar: AppBar(
-        title: Text("Editor page"),
+        title: Text('Editor page'),
         actions: <Widget>[
           Builder(
             builder: (context) => IconButton(
@@ -59,15 +57,15 @@ class EditorPageState extends State<EditorPage> {
   /// Loads the document asynchronously from a file if it exists, otherwise
   /// returns default document.
   Future<NotusDocument> _loadDocument() async {
-    final file = File(Directory.systemTemp.path + "/quick_start.json");
+    final file = File(Directory.systemTemp.path + '/quick_start.json');
     if (await file.exists()) {
       final contents = await file
           .readAsString()
           .then((data) => Future.delayed(Duration(seconds: 1), () => data));
       return NotusDocument.fromJson(jsonDecode(contents));
     }
-    final Delta delta = Delta()..insert("Zefyr Quick Start\n");
-    return NotusDocument.fromDelta(delta);
+    final delta = Delta()..insert('Zefyr Quick Start\n');
+    return NotusDocument()..compose(delta, ChangeSource.local);
   }
 
   void _saveDocument(BuildContext context) {
@@ -75,10 +73,10 @@ class EditorPageState extends State<EditorPage> {
     // `jsonEncode` directly:
     final contents = jsonEncode(_controller.document);
     // For this example we save our document to a temporary file.
-    final file = File(Directory.systemTemp.path + "/quick_start.json");
+    final file = File(Directory.systemTemp.path + '/quick_start.json');
     // And show a snack bar on success.
     file.writeAsString(contents).then((_) {
-      Scaffold.of(context).showSnackBar(SnackBar(content: Text("Saved.")));
+      Scaffold.of(context).showSnackBar(SnackBar(content: Text('Saved.')));
     });
   }
 }
