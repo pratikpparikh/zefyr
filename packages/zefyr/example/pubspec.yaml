@@ -18,11 +18,15 @@ dependencies:
   cupertino_icons: ^0.1.2
   image_picker: ^0.6.7+2
   zefyr:
-    path: ../
+    git:
+      url: git://github.com/pratikpparikh/zefyr.git
+      path: packages/zefyr
 
 dependency_overrides:
   notus:
-    path: ../../notus
+    git:
+      url: git://github.com/pratikpparikh/zefyr.git
+      path: packages/notus
 
 dev_dependencies:
   flutter_test:
