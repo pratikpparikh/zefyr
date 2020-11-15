@@ -8,8 +8,8 @@ environment:
   sdk: '>=2.9.0 <3.0.0'
 
 dependencies:
-  collection: ^1.14.6
-  meta: ^1.1.0
+  collection: ^1.14.13
+  meta: ^1.2.3
   quill_delta: ^2.0.0
   quiver_hashcode: ^2.0.0
 
