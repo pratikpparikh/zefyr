@@ -73,6 +73,8 @@ abstract class NotusAttributeBuilder<T> implements NotusAttributeKey<T> {
 ///   * [NotusAttribute.heading]
 ///   * [NotusAttribute.block]
 ///   * [NotusAttribute.alignment]
+///   * [NotusAttribute.direction]
+///   * [NotusAttribute.indent]
 class NotusAttribute<T> implements NotusAttributeBuilder<T> {
   static final Map<String, NotusAttributeBuilder> _registry = {
     NotusAttribute.bold.key: NotusAttribute.bold,
@@ -83,6 +85,8 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
     NotusAttribute.heading.key: NotusAttribute.heading,
     NotusAttribute.block.key: NotusAttribute.block,
     NotusAttribute.alignment.key: NotusAttribute.alignment,
+    NotusAttribute.direction.key: NotusAttribute.direction,
+    NotusAttribute.indent.key: NotusAttribute.indent,
   };
 
   // Inline attributes
@@ -148,6 +152,36 @@ class NotusAttribute<T> implements NotusAttributeBuilder<T> {
 
   /// Alias for [NotusAttribute.alignment.justify]
   static NotusAttribute<String> get justifyAlignment => alignment.justify;
+
+  /// Direction attribute
+  static const direction = DirectionAttributeBuilder._();
+
+  /// Alias for [NotusAttribute.direction.ltr].
+  static NotusAttribute<String> get rtlDirection => direction.rtl;
+
+  /// Alias for [NotusAttribute.direction.ltr].
+  static NotusAttribute<String> get ltrDirection => direction.ltr;
+
+  static const indent = IndentAttributeBuilder._();
+
+  /// Alias for [NotusAttribute.indent.level1].
+  static NotusAttribute<int> get indentLevel1 => indent.level1;
+
+  /// Alias for [NotusAttribute.indent.level2].
+  static NotusAttribute<int> get indentLevel2 => indent.level2;
+
+  /// Alias for [NotusAttribute.indent.level3].
+  static NotusAttribute<int> get indentLevel3 => indent.level3;
+
+  static NotusAttribute<int> getIndentAttributeForLevel(int level) {
+    if (level == 1) {
+      return indentLevel1;
+    }
+    if (level == 2) {
+      return indentLevel2;
+    }
+    return indentLevel3;
+  }
 
   static NotusAttribute _fromKeyValue(String key, dynamic value) {
     if (!_registry.containsKey(key)) {
@@ -371,6 +405,7 @@ class _StrikethroughAttribute extends NotusAttribute<bool> {
 /// [NotusAttribute.link] instead.
 class LinkAttributeBuilder extends NotusAttributeBuilder<String> {
   static const _kLink = 'a';
+
   const LinkAttributeBuilder._() : super._(_kLink, NotusAttributeScope.inline);
 
   /// Creates a link attribute with specified link [value].
@@ -384,6 +419,7 @@ class LinkAttributeBuilder extends NotusAttributeBuilder<String> {
 /// [NotusAttribute.heading] instead.
 class HeadingAttributeBuilder extends NotusAttributeBuilder<int> {
   static const _kHeading = 'heading';
+
   const HeadingAttributeBuilder._()
       : super._(_kHeading, NotusAttributeScope.line);
 
@@ -403,6 +439,7 @@ class HeadingAttributeBuilder extends NotusAttributeBuilder<int> {
 /// [NotusAttribute.block] instead.
 class BlockAttributeBuilder extends NotusAttributeBuilder<String> {
   static const _kBlock = 'block';
+
   const BlockAttributeBuilder._() : super._(_kBlock, NotusAttributeScope.line);
 
   /// Formats a block of lines as a bullet list.
@@ -441,8 +478,26 @@ class AlignmentAttributeBuilder extends NotusAttributeBuilder<String> {
       NotusAttribute<String>._(key, scope, 'justify');
 }
 
-/// Applies italic style to a text segment.
-class _RTLDirectionAttribute extends NotusAttribute<bool> {
-  const _RTLDirectionAttribute()
-      : super._('rtl', NotusAttributeScope.line, true);
+class DirectionAttributeBuilder extends NotusAttributeBuilder<String> {
+  static const _kDirection = 'direction';
+
+  const DirectionAttributeBuilder._()
+      : super._(_kDirection, NotusAttributeScope.line);
+
+  NotusAttribute<String> get rtl => NotusAttribute<String>._(key, scope, 'rtl');
+
+  NotusAttribute<String> get ltr => NotusAttribute<String>._(key, scope, 'ltr');
+}
+
+class IndentAttributeBuilder extends NotusAttributeBuilder<int> {
+  static const _kIndent = 'indent';
+
+  const IndentAttributeBuilder._()
+      : super._(_kIndent, NotusAttributeScope.line);
+
+  NotusAttribute<int> get level1 => NotusAttribute<int>._(key, scope, 1);
+
+  NotusAttribute<int> get level2 => NotusAttribute<int>._(key, scope, 2);
+
+  NotusAttribute<int> get level3 => NotusAttribute<int>._(key, scope, 3);
 }
